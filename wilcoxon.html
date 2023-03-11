@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Wilcoxon Mann-Whitney Test</title>
+	<script>
+		function calculate() {
+			// Get the user input values
+			var group1_input = document.getElementById("group1").value;
+			var group2_input = document.getElementById("group2").value;
+
+			// Split the input strings into arrays of numbers
+			var group1_data = group1_input.split(",").map(Number);
+			var group2_data = group2_input.split(",").map(Number);
+
+			// Sort the data
+			group1_data.sort(function(a, b){return a-b});
+			group2_data.sort(function(a, b){return a-b});
+
+			// Calculate the Wilcoxon Mann-Whitney U statistic
+			var N1 = group1_data.length;
+			var N2 = group2_data.length;
+			var U1 = 0;
+			for (var i = 0; i < N1; i++) {
+				for (var j = 0; j < N2; j++) {
+					if (group1_data[i] < group2_data[j]) {
+						U1++;
+					} else if (group1_data[i] == group2_data[j]) {
+						U1 += 0.5;
+					}
+				}
+			}
+			var U2 = N1*N2 - U1;
+			var U = Math.min(U1, U2);
+
+			// Calculate the p-value using the reference table
+			var m = N1*N2/2;
+			var sd = Math.sqrt(N1*N2*(N1+N2+1)/12);
+			var z = (U - m) / sd;
+			var p = 2 * (1 - lookupPValue(z));
+
+			// Display the results on the page
+			document.getElementById("result").innerHTML = "Wilcoxon Mann-Whitney U: " + U.toFixed(2) + "<br>";
+			document.getElementById("result").innerHTML += "p-value: " + p.toFixed(4);
+		}
+
+		function lookupPValue(z) {
+			// Reference table for the U statistic
+var table = [  [0.50,0.68,0.80,0.90,0.95,0.98,0.99,0.995,0.998,0.999],
+  [0.33,0.46,0.56,0.67,0.74,0.82,0.87,0.90,0.93,0.95],
+  [0.24,0.35,0.43,0.52,0.59,0.67,0.72,0.78,0.82,0.86],
+  [0.18,0.28,0.35,0.42,0.49,0.57,0.62,0.68,0.73,0.78],
+  [0.14,0.22,0.28,0.34,0.41,0.47,0.52,0.58,0.63,0.68],
+  [0.11,0.18,0.23,0.28,0.34,0.40,0.45,0.50,0.55,0.60],
+  [0.09,0.15,0.20,0.24,0.30,0.35,0.39,0.44,0.48,0.53],
+  [0.07,0.13,0.17,0.21,0.26,0.31,0.35,0.39,0.43,0.47],
+  [0.06,0.11,0.15,0.18,0.23,0.27,0.31,0.34,0.38,0.42],
+  [0.05,0.10,0.13,0.16,0.20,0.24,0.28,0.31,0.35,0.38]
+];
+		// Find the closest value in the table to the given z-score
+		var closest = table[0][0];
+		for (var i = 0; i < table.length; i++) {
+			for (var j = 0; j < table[i].length; j++) {
+				if (Math.abs(table[i][j] - z) < Math.abs(closest - z)) {
+					closest = table[i][j];
+				}
+			}
+		}
+
+		// Return the corresponding p-value
+		return closest;
+	}
+</script>
+</head>
+<body>
+	<h1>Wilcoxon Mann-Whitney Test</h1>
+	<p>Enter the data for the two groups:</p>
+	<label for="group1">Group 1:</label>
+	<input type="text" id="group1"><br><br>
+	<label for="group2">Group 2:</label>
+	<input type="text" id="group2"><br><br>
+	<button onclick="calculate()">Calculate</button><br><br>
+	<div id="result"></div>
+</body>
+</html>
+
